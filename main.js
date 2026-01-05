@@ -19,10 +19,14 @@ const getCoordinates = async (location) => {
 
 const parseDailyForecast = (data, units) => {
   const dailyData = [];
-  const { temperature_2m_min: minTempUnit, temperature_2m_max: maxTempUnit } =
-    units;
+  const {
+    temperature_2m_min: minTempUnit,
+    temperature_2m_max: maxTempUnit,
+  } = units;
+
   const { time, temperature_2m_min: minTemp, temperature_2m_max: maxTemp } =
     data;
+
   for (let i = 0; i < time.length; i++) {
     dailyData.push({
       date: time[i],
@@ -44,20 +48,20 @@ const parseHourlyTemp = (data, units) => {
   return { hours, temp };
 };
 
+const createData = (units, data) => {
+  return { units, data };
+};
+
 const getWeatherData = async ({ lat, lon }) => {
   const url = APIs.weatherAPI(lat, lon);
   const { current, current_units, daily, daily_units, hourly, hourly_units } =
     await fetchUrl(url);
-  const currentWeather = { units: current_units, data: current };
-  const hourlyForecast = {
-    units: hourly_units,
-    data: parseHourlyTemp(hourly, hourly_units),
-  };
-  const dailyForecast = {
-    units: daily_units,
-    data: parseDailyForecast(daily, daily_units),
-  };
-  return { currentWeather, hourlyForecast, dailyForecast };
+
+  return {
+    currentWeather : createData(current_units,current),
+    hourlyForecast : createData(hourly_units, parseHourlyTemp(hourly, hourly_units)),
+    dailyForecast : createData(daily_units, parseDailyForecast(daily, daily_units))
+  }
 };
 
 const composeCurrentWeatherMsg = (currentWeather, location, { lat, lon }) => {
