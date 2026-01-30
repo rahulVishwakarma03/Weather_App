@@ -13,7 +13,7 @@ const main = async () => {
   try {
     coordinates = await getCoordinates(location);
   } catch (error) {
-    console.log("Please enter a valid location name!");
+    console.log(error.message);
     main();
     return;
   }

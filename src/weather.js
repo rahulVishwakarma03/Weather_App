@@ -8,6 +8,10 @@ const fetchUrl = async (url) => {
 export const getCoordinates = async (location) => {
   const url = APIs.coordsAPI(location);
   const response = await fetchUrl(url);
+
+  if(response.length === 0) 
+    throw new Error("\nLocation is invalid! | Please enter a valid location\n");
+
   const { lat, lon } = response[0];
   return { lat, lon };
 };
@@ -38,10 +42,14 @@ const parseHourlyTemp = (data, units) => {
   const hours = time.slice(0, 24).map((el) => el.slice(-5));
 
   const temp = temperature_2m.slice(0, 24).map((el) =>
-    `${Math.round(el)}${tempUnit} `.padStart(5, 0)
+    `${Math.round(el)}${tempUnit}`
   );
-
-  return { hours, temp };
+  
+  const response = hours.reduce((res,el,i) => {
+    res[el] = temp[i]
+    return res;
+  },{})
+  return response;
 };
 
 const createData = (units, data) => {
@@ -52,7 +60,7 @@ export const getWeatherData = async ({ lat, lon }) => {
   const url = APIs.weatherAPI(lat, lon);
   const { current, current_units, daily, daily_units, hourly, hourly_units } =
     await fetchUrl(url);
-
+    
   return {
     currentWeather: createData(current_units, current),
     hourlyForecast: createData(
